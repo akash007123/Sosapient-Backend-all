@@ -34,10 +34,23 @@ router.post('/subscribe', async (req, res) => {
 // Get all subscribers (admin only)
 router.get('/subscribers', async (req, res) => {
   try {
-    const subscribers = await Subscriber.find({ status: 'active' });
+    const subscribers = await Subscriber.find().sort({ subscribedAt: -1 });
     res.json(subscribers);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching subscribers' });
+  }
+});
+
+// Delete subscriber
+router.delete('/subscribers/:id', async (req, res) => {
+  try {
+    const subscriber = await Subscriber.findByIdAndDelete(req.params.id);
+    if (!subscriber) {
+      return res.status(404).json({ message: 'Subscriber not found' });
+    }
+    res.json({ message: 'Subscriber deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting subscriber' });
   }
 });
 
