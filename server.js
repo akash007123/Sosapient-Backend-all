@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
+const subscriberRoutes = require('./routes/subscribers');
 
 const app = express();
 
@@ -12,7 +13,6 @@ app.use(cors({
     'http://localhost:5173', // Development
     'http://localhost:3000', // Alternative development port
     'https://sosapient-test.netlify.app', // Production
-    'https://staging.your-domain.com' // Staging
   ],
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -39,6 +39,7 @@ const careerRoutes = require('./routes/career.routes');
 // Use routes
 app.use('/api/contact', contactRoutes);
 app.use('/api/career', careerRoutes);
+app.use('/api', subscriberRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
