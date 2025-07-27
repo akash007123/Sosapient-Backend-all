@@ -40,6 +40,7 @@ const clientRoutes = require('./routes/client.routes');
 const projectRoutes = require('./routes/project.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const leaveRoutes = require('./routes/leave.routes');
+const linkRoutes = require('./routes/link.routes');
 
 // Use routes
 app.use('/api/contact', contactRoutes);
@@ -55,6 +56,7 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/leaves', leaveRoutes);
+app.use('/api/links', linkRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
