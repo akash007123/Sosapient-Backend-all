@@ -8,19 +8,13 @@ const subscriberRoutes = require('./routes/subscribers');
 const app = express();
 
 // CORS configuration
-app.use(cors({
-  origin: [
-    'http://localhost:5173', // Development
-    'http://localhost:3000', // Alternative development port
-    'https://sosapient-test.netlify.app', // Production
-    'https://sosapient.in',
-    'https://staging.your-domain.com' // Staging
-  ],
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 
-// Request logging middleware
+// Body parser middleware (MOVE THIS BEFORE LOGGING)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware (MOVED AFTER BODY PARSER)
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   console.log('Request headers:', req.headers);
@@ -30,18 +24,35 @@ app.use((req, res, next) => {
   next();
 });
 
-// Body parser middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Serve static files (for uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Import routes
 const contactRoutes = require('./routes/contact.routes');
 const careerRoutes = require('./routes/career.routes');
+const authRoutes = require('./routes/auth.routes');
+const hrmsProtected = require('./routes/hrms.protected');
+const departmentRoutes = require('./routes/department.routes');
+const eventRoutes = require('./routes/event.routes');
+const reportRoutes = require('./routes/report.routes');
+const employeeRoutes = require('./routes/employee.routes');
+const clientRoutes = require('./routes/client.routes');
+const projectRoutes = require('./routes/project.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 // Use routes
 app.use('/api/contact', contactRoutes);
 app.use('/api/career', careerRoutes);
 app.use('/api', subscriberRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/hrms', hrmsProtected);
+app.use('/api/departments', departmentRoutes);
+app.use('/api', eventRoutes);
+app.use('/api', reportRoutes);
+app.use('/api', employeeRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -53,16 +64,24 @@ app.use((err, req, res, next) => {
 });
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sosapient';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
+
+console.log('Attempting to connect to MongoDB at:', MONGODB_URI);
+
+mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log('Connected to MongoDB');
+    console.log('Connected to MongoDB successfully');
     // Start server
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      console.log(`JWT Secret: ${JWT_SECRET ? 'Set' : 'Using default'}`);
     });
   })
   .catch((error) => {
     console.error('MongoDB connection error:', error);
+    console.error('Please make sure MongoDB is running or check your connection string');
+    console.error('You can install MongoDB locally or use MongoDB Atlas');
     process.exit(1);
   }); 
