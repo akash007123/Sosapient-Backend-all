@@ -10,7 +10,8 @@ const {
   getProjectStats,
   getClientsForDropdown,
   getEmployeesForTeam,
-  getProjectsByClient
+  getProjectsByClient,
+  getProjectsByEmployee
 } = require('../controllers/project.controller');
 
 // Apply authentication middleware to all routes
@@ -30,6 +31,9 @@ router.get('/dropdown/employees', getEmployeesForTeam);
 
 // Get projects by client ID
 router.get('/client/:clientId', getProjectsByClient);
+
+// Get projects assigned to a specific employee
+router.get('/employee/:employeeId', getProjectsByEmployee);
 
 // Create new project
 router.post('/', createProject);

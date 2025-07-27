@@ -1,11 +1,14 @@
 const Project = require('../models/project.model');
 const Client = require('../models/client.model');
 const User = require('../models/user.model');
+const mongoose = require('mongoose');
 
 // Get all projects with search and filtering
 const getAllProjects = async (req, res) => {
   try {
-    const { search = '', status = '', client = '' } = req.query;
+    const { search = '', status = '', client = '', logged_in_employee_id, role } = req.query;
+    
+    console.log('getAllProjects - Query params:', { search, status, client, logged_in_employee_id, role });
     
     const query = {};
     
@@ -27,12 +30,24 @@ const getAllProjects = async (req, res) => {
     if (client) {
       query.client = client;
     }
+
+    // Role-based filtering (similar to reference Dashboard.js)
+    if (role === 'employee' && logged_in_employee_id) {
+      // Convert string ID to ObjectId for proper comparison
+      const employeeObjectId = new mongoose.Types.ObjectId(logged_in_employee_id);
+      query.team_members = { $in: [employeeObjectId] };
+      console.log('Employee filtering applied:', { role, logged_in_employee_id, employeeObjectId, query });
+    }
+    
+    console.log('Final query:', JSON.stringify(query, null, 2));
     
     const projects = await Project.find(query)
       .populate('client', 'name email')
       .populate('team_members', 'first_name last_name email profile')
       .populate('created_by', 'first_name last_name')
       .sort({ createdAt: -1 });
+    
+    console.log('Found projects count:', projects.length);
     
     res.json({
       success: true,
@@ -379,6 +394,37 @@ const getProjectsByClient = async (req, res) => {
   }
 };
 
+// Get projects assigned to a specific employee
+const getProjectsByEmployee = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    
+    // Convert string ID to ObjectId for proper comparison
+    const employeeObjectId = new mongoose.Types.ObjectId(employeeId);
+    
+    // Find projects where the employee is in the team_members array
+    const projects = await Project.find({
+      team_members: { $in: [employeeObjectId] }
+    })
+      .populate('client', 'name email')
+      .populate('team_members', 'first_name last_name email profile')
+      .populate('created_by', 'first_name last_name')
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      projects: projects
+    });
+  } catch (error) {
+    console.error('Error fetching employee projects:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching employee projects',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getAllProjects,
   getProjectById,
@@ -388,5 +434,6 @@ module.exports = {
   getProjectStats,
   getClientsForDropdown,
   getEmployeesForTeam,
-  getProjectsByClient
+  getProjectsByClient,
+  getProjectsByEmployee
 }; 
