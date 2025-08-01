@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const Department = require('../models/department.model');
 
 // Get all departments
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const departments = await Department.find({ isActive: true }).sort({ name: 1 });
     res.json({ departments });
@@ -14,7 +14,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Get single department
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const department = await Department.findById(req.params.id);
     if (!department) {
@@ -27,7 +27,7 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // Create new department
-router.post('/', auth, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const department = new Department(req.body);
     await department.save();
@@ -38,7 +38,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Update department
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const department = await Department.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!department) {
@@ -51,7 +51,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete department
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const department = await Department.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true });
     if (!department) {

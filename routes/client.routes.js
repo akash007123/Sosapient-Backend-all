@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const clientController = require('../controllers/client.controller');
-const authenticateToken = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const { upload, handleImageUploadError } = require('../middleware/imageUpload');
 
 // Apply authentication middleware to all routes

@@ -8,7 +8,12 @@ const subscriberRoutes = require('./routes/subscribers');
 const app = express();
 
 // CORS configuration
-app.use(cors());
+app.use(cors({
+  origin: true, // Allow all origins in development
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
 // Body parser middleware (MOVE THIS BEFORE LOGGING)
 app.use(express.json());
@@ -41,6 +46,7 @@ const projectRoutes = require('./routes/project.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const leaveRoutes = require('./routes/leave.routes');
 const linkRoutes = require('./routes/link.routes');
+const todoRoutes = require('./routes/todo.routes');
 
 // Use routes
 app.use('/api/contact', contactRoutes);
@@ -57,6 +63,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/links', linkRoutes);
+app.use('/api/todos', todoRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

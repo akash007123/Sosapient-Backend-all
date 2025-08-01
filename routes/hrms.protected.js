@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const auth = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const User = require('../models/user.model');
 const Department = require('../models/department.model');
 const Holiday = require('../models/holiday.model'); // Added Holiday model
@@ -49,7 +49,7 @@ const upload = multer({
 });
 
 // Example protected route
-router.get('/dashboard', auth, (req, res) => {
+router.get('/dashboard', authenticateToken, (req, res) => {
   res.json({ message: 'Welcome to HRMS dashboard!', user: req.user });
 });
 
@@ -64,7 +64,7 @@ router.get('/departments', async (req, res) => {
 });
 
 // Get all employees
-router.get('/employees', auth, async (req, res) => {
+router.get('/employees', authenticateToken, async (req, res) => {
   try {
     const employees = await User.find({ role: 'employee' }).select('-password');
     res.json({ employees });
@@ -74,7 +74,7 @@ router.get('/employees', auth, async (req, res) => {
 });
 
 // Get single employee
-router.get('/employees/:id', auth, async (req, res) => {
+router.get('/employees/:id', authenticateToken, async (req, res) => {
   try {
     const employee = await User.findById(req.params.id).select('-password');
     if (!employee) {
@@ -87,7 +87,7 @@ router.get('/employees/:id', auth, async (req, res) => {
 });
 
 // Delete employee
-router.delete('/employees/:id', auth, async (req, res) => {
+router.delete('/employees/:id', authenticateToken, async (req, res) => {
   try {
     const employee = await User.findByIdAndDelete(req.params.id);
     if (!employee) {
@@ -100,7 +100,7 @@ router.delete('/employees/:id', auth, async (req, res) => {
 });
 
 // Create new employee with profile picture upload
-router.post('/employees', auth, upload.single('profile'), async (req, res) => {
+router.post('/employees', authenticateToken, upload.single('profile'), async (req, res) => {
   try {
     const employeeData = { ...req.body, role: 'employee' };
     
@@ -124,7 +124,7 @@ router.post('/employees', auth, upload.single('profile'), async (req, res) => {
 });
 
 // Update employee with profile picture upload
-router.put('/employees/:id', auth, upload.single('profile'), async (req, res) => {
+router.put('/employees/:id', authenticateToken, upload.single('profile'), async (req, res) => {
   try {
     const updateData = { ...req.body };
     
@@ -161,7 +161,7 @@ router.put('/employees/:id', auth, upload.single('profile'), async (req, res) =>
 });
 
 // Get all admins
-router.get('/admins', auth, async (req, res) => {
+router.get('/admins', authenticateToken, async (req, res) => {
   try {
     const admins = await User.find({ role: 'admin' }).select('-password');
     res.json({ admins });
@@ -171,7 +171,7 @@ router.get('/admins', auth, async (req, res) => {
 });
 
 // Get single admin
-router.get('/admins/:id', auth, async (req, res) => {
+router.get('/admins/:id', authenticateToken, async (req, res) => {
   try {
     const admin = await User.findById(req.params.id).select('-password');
     if (!admin) {
@@ -184,7 +184,7 @@ router.get('/admins/:id', auth, async (req, res) => {
 });
 
 // Create new admin
-router.post('/admins', auth, upload.single('profile'), async (req, res) => {
+router.post('/admins', authenticateToken, upload.single('profile'), async (req, res) => {
   try {
     const adminData = { ...req.body, role: 'admin' };
     
@@ -208,7 +208,7 @@ router.post('/admins', auth, upload.single('profile'), async (req, res) => {
 });
 
 // Update admin
-router.put('/admins/:id', auth, upload.single('profile'), async (req, res) => {
+router.put('/admins/:id', authenticateToken, upload.single('profile'), async (req, res) => {
   try {
     const updateData = { ...req.body };
     
@@ -245,7 +245,7 @@ router.put('/admins/:id', auth, upload.single('profile'), async (req, res) => {
 });
 
 // Delete admin
-router.delete('/admins/:id', auth, async (req, res) => {
+router.delete('/admins/:id', authenticateToken, async (req, res) => {
   try {
     const admin = await User.findByIdAndDelete(req.params.id);
     if (!admin) {
@@ -258,7 +258,7 @@ router.delete('/admins/:id', auth, async (req, res) => {
 });
 
 // Holiday routes
-router.get('/holidays', auth, async (req, res) => {
+router.get('/holidays', authenticateToken, async (req, res) => {
   try {
     const holidays = await Holiday.find().sort({ date: 1 });
     res.json({ holidays });
@@ -267,7 +267,7 @@ router.get('/holidays', auth, async (req, res) => {
   }
 });
 
-router.post('/holidays', auth, async (req, res) => {
+router.post('/holidays', authenticateToken, async (req, res) => {
   try {
     const { title, date } = req.body;
     
@@ -287,7 +287,7 @@ router.post('/holidays', auth, async (req, res) => {
   }
 });
 
-router.put('/holidays/:id', auth, async (req, res) => {
+router.put('/holidays/:id', authenticateToken, async (req, res) => {
   try {
     const { title, date } = req.body;
     
@@ -311,7 +311,7 @@ router.put('/holidays/:id', auth, async (req, res) => {
   }
 });
 
-router.delete('/holidays/:id', auth, async (req, res) => {
+router.delete('/holidays/:id', authenticateToken, async (req, res) => {
   try {
     const holiday = await Holiday.findByIdAndDelete(req.params.id);
     
@@ -326,7 +326,7 @@ router.delete('/holidays/:id', auth, async (req, res) => {
 });
 
 // Unified events endpoint: holidays + employee/admin birthdays
-router.get('/events', auth, async (req, res) => {
+router.get('/events', authenticateToken, async (req, res) => {
   try {
     // Holidays
     const holidays = await Holiday.find().select('title date').lean();
